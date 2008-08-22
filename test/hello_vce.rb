@@ -13,7 +13,6 @@ ns = Ridela::namespace(:hello) do |l|
     l.that[:cppheader] =<<EOF
 #include <wsnetcore/Define.h>
 #include <wsnetcore/Serialize.h>
-#include <vtw/common.h>
 EOF
   end
 end
