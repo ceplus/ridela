@@ -25,9 +25,9 @@ RIDELA_VCE_TEMPLATE = <<EOF
       my:size="<%=h template.size %>" />
 <% end %>
 <% interface.methods.each do |method| %>
-    <method methname="<%= method.name %>" prflow="<%= method[:prflow] %>">
+    <method methname="<%= method.name %>" prflow="<%= method[:flow] %>">
 <%   method.args.each do |arg| %>
-      <param prtype="<%= t arg.type %>" prname="<%= arg.name %>" />
+      <param prtype="<%= t arg.type %>" prname="<%= arg.name %>" <%= prlength(arg) %> />
 <%   end %>
     </method>
 <% end %>
@@ -111,6 +111,10 @@ module Ridela
         @namespace = namespace
         @interface = namespace.interfaces[0]
         Validator.new.set_default_annotation(namespace)
+      end
+      
+      def prlength(arg)
+        arg[:length] ? "prlength=\"#{arg[:length]}\"" : ""
       end
       
       def h(str) CGI.escapeHTML(str); end

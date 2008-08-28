@@ -5,17 +5,18 @@ require 'ridela.rb'
 class LanguageTest < Test::Unit::TestCase
   def test_build_with
     b = Ridela::Language.new(Ridela::NamespaceNode.new(:root))
-    i = b.interface(:Hello) do |b|
-      assert_equal(2, b.depth)        
-      assert_kind_of(Ridela::NamespaceNode, b.root)
-      assert_kind_of(Ridela::InterfaceNode, b.that)
-      assert_equal(:Hello, b.that.name)
-      b.method(:foo, :akey=>:aval) do |b|
-        assert_equal(3, b.depth)
-        assert_kind_of(Ridela::MethodNode, b.that)
-        assert_equal(:foo,  b.that.name)
-        assert_equal(:aval, b.that[:akey])
-        b.args([:i, :int], [:j, :string])
+    i = b.interface(:Hello) do
+      type.class_eval{ include Test::Unit::Assertions }
+      assert_equal(2, depth)        
+      assert_kind_of(Ridela::NamespaceNode, root)
+      assert_kind_of(Ridela::InterfaceNode, that)
+      assert_equal(:Hello, that.name)
+      method(:foo, :akey=>:aval) do
+        assert_equal(3, depth)
+        assert_kind_of(Ridela::MethodNode, that)
+        assert_equal(:foo,  that.name)
+        assert_equal(:aval, that[:akey])
+        args([:i, :int], [:j, :string])
       end
     end
     
@@ -34,6 +35,18 @@ class LanguageTest < Test::Unit::TestCase
     
     ns[:anon_key] = 'anon_val'
     assert_equal('anon_val', ns[:anon_key])
+  end
+  
+  def test_scope_external
+    b = Ridela::Language.new(Ridela::NamespaceNode.new(:root))
+    assert_equal(b.resolution, :internal)
+    b.with_resolution(:external) do
+      i = b.interface(:Hello) do |bb|
+        assert_equal(bb, b)
+        assert_equal(b.resolution, :external)
+      end
+    end
+    assert_equal(b.resolution, :internal)
   end
 end
 

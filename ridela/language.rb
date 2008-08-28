@@ -4,9 +4,22 @@ module Ridela
     def root() @scope.first; end
     def that() @scope.last; end
     def depth() @scope.size; end
-
+    def resolution() @block_resolutions.last; end
+    def push_resolution(resol) @block_resolutions << resol; end
+    def pop_resolution() @block_resolutions.pop; end
+    
     def initialize(root)
       @scope = [root]
+      @block_resolutions = [:internal]
+    end
+    
+    def with_resolution(resol, &block)
+      push_resolution(resol)
+      begin
+        define(block) 
+      ensure
+        pop_resolution
+      end
     end
     
     def args(*arg_list)
@@ -16,7 +29,14 @@ module Ridela
     end
     
     def define(block)
-      block.call(self)
+      case resolution
+      when :internal
+        instance_eval(&block)
+      when :external
+        block.call(self)
+      else
+        raise "Unknown resolution rule!"
+      end
     end
    
     def define_with(topush, annotations, block=nil)
@@ -31,9 +51,17 @@ module Ridela
       topush
     end
     
-    def interface(name, annot={}, &block) define_with(InterfaceNode.new(name), annot, block); end
-    def method(name, annot={}, &block) define_with(MethodNode.new(name), annot, block); end
-    def arg(name, type, annot={}) define_with(ArgNode.new(name, type), annot); end
+    def interface(name, annot={}, &block)
+      define_with(InterfaceNode.new(name), annot, block)
+    end
+    
+    def method(name, annot={}, &block)
+      define_with(MethodNode.new(name), annot, block)
+    end
+    
+    def arg(name, type, annot={})
+      define_with(ArgNode.new(name, type), annot)
+    end
 
     def annotate(key, val)
       @scope.last[key] = val
