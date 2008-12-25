@@ -69,12 +69,18 @@ module Ridela
     end
     
     def message(name, annot={}, &block)
-      define_with(MessageNode.new(name), annot, block)
+      find(name) or define_with(MessageNode.new(name), annot, block)
     end
     
     def field(name, kind, annot={})
       define_with(FieldNode.new(name, kind), annot)
     end
+    
+    def find(name)
+      containing = @scope.reverse.find{|i| i.find(name) }
+      containing ? containing.find(name) : nil
+    end
+    
   end
   
   def self.namespace(name="", &block)

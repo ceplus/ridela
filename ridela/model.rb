@@ -10,9 +10,18 @@ module Ridela
     def add(child)
       children << child
     end
+    
+    def find(name)
+      children.find{ |c| c.name == name }
+    end
   end
 
+  module Kind
+    # open-mixin: external code can hook-up kind classes
+  end
+  
   class PrimitiveKind
+    include Kind
     attr_reader :name
     
     def initialize(name)
@@ -21,15 +30,30 @@ module Ridela
     
     def compound?() false; end
   end
+
+  class NodeKind
+    include Kind
+    attr_reader :node
+    
+    def initialize(node)
+      @node = node
+    end
+    
+    def name() node.name; end
+  end
   
   def self.kindify(kind)
-    case kind
-    when Symbol
-      return PrimitiveKind.new(kind)
-    when PrimitiveKind
-      return kind
+    if /Node$/ =~ kind.class.name
+      NodeKind.new(kind)
     else
-      raise "Unknown Kind:#{kind}" 
+      case kind
+      when Symbol
+        return PrimitiveKind.new(kind)
+      when PrimitiveKind
+        return PrimitiveKind.new(kind)
+      else
+        raise "Unknown Kind:#{kind}" 
+      end
     end
   end
   
@@ -87,6 +111,7 @@ module Ridela
   
   class FieldNode < DataNode; end
   
+  # XXX: support namespace nesting
   class NamespaceNode
     include Annotatable, Parentable
     attr_reader :name, :children

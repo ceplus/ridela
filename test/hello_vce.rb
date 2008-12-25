@@ -14,7 +14,19 @@ ns = Ridela::namespace(:hello) do
 #include <wsnetcore/Serialize.h>
 EOF
   end
+  
+  message(:Hello) do
+    field(:foo, :int)
+    field(:bar, :string)
+  end
+  
+  message(:Bye) do
+    field(:hello, message(:Hello))
+    field(:ok, :bool)
+  end  
 end
 
 out = STDOUT
-Ridela::VCE::Writer.new(ns).write(out)
+Ridela::VCE::IDLWriter.new(ns).write(out)
+out.print "\n"
+Ridela::VCE::CxxMessageWriter.new(ns).write(out)
