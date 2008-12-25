@@ -6,7 +6,7 @@ class LanguageTest < Test::Unit::TestCase
   def test_build_with
     b = Ridela::Language.new(Ridela::NamespaceNode.new(:root))
     i = b.interface(:Hello) do
-      type.class_eval{ include Test::Unit::Assertions }
+      self.class.class_eval{ include Test::Unit::Assertions }
       assert_equal(2, depth)        
       assert_kind_of(Ridela::NamespaceNode, root)
       assert_kind_of(Ridela::InterfaceNode, that)
@@ -31,7 +31,7 @@ class LanguageTest < Test::Unit::TestCase
     assert_equal(ns.interfaces[0].methods[0].name, :foo)
     assert_equal(ns.interfaces[0].methods[0].args.size, 2)
     assert_equal(ns.interfaces[0].methods[0].args[0].name, :i)
-    assert_equal(ns.interfaces[0].methods[0].args[0].type, :int)
+    assert_equal(ns.interfaces[0].methods[0].args[0].kind, :int)
     
     ns[:anon_key] = 'anon_val'
     assert_equal('anon_val', ns[:anon_key])
@@ -48,6 +48,21 @@ class LanguageTest < Test::Unit::TestCase
     end
     assert_equal(b.resolution, :internal)
   end
+  
+  def test_message_and_field
+    hello = Ridela::namespace(:hello) do
+      message(:Hello) do
+        field(:foo, :string)
+        field(:bar, :int)
+      end
+    end
+    
+    assert_equal(hello.messages.size, 1)
+    assert_equal(hello.messages.first.name, :Hello)
+    assert_equal(hello.messages.first.fields.size, 2)
+    assert_equal(hello.messages.first.fields.first.name, :foo)
+  end
+  
 end
 
 class HelloTest < Test::Unit::TestCase

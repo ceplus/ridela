@@ -1,5 +1,6 @@
 
 module Ridela
+  
   class Language
     def root() @scope.first; end
     def that() @scope.last; end
@@ -59,12 +60,20 @@ module Ridela
       define_with(MethodNode.new(name), annot, block)
     end
     
-    def arg(name, type, annot={})
-      define_with(ArgNode.new(name, type), annot)
+    def arg(name, kind, annot={})
+      define_with(ArgNode.new(name, kind), annot)
     end
 
     def annotate(key, val)
       @scope.last[key] = val
+    end
+    
+    def message(name, annot={}, &block)
+      define_with(MessageNode.new(name), annot, block)
+    end
+    
+    def field(name, kind, annot={})
+      define_with(FieldNode.new(name, kind), annot)
     end
   end
   

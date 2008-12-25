@@ -6,27 +6,35 @@ module Ridela
     def []=(key, val)(@annotation ||= {})[key] = val; end
   end
   
-  class ArgNode
+  module Parentable
+    def add(child)
+      children << child
+    end
+  end
+  
+  class DataNode
     include Annotatable
-    attr_reader :name, :type
+    attr_reader :name, :kind
     
-    def initialize(name, type)
+    def initialize(name, kind)
       @name = name
-      @type = type
+      @kind = kind
     end
     
     def children() []; end
   end
 
+  class ArgNode < DataNode; end
+  
   class MethodNode
     include Annotatable
-    attr_reader :name, :type, :args
+    attr_reader :name, :kind, :args
     alias children args
     
     def initialize(name)
       @name = name
       @args = []
-      @type = :void
+      @kind = :void
     end
 
     def add(child)
@@ -35,7 +43,7 @@ module Ridela
   end
 
   class InterfaceNode
-    include Annotatable
+    include Annotatable, Parentable
     attr_reader :name, :methods
     alias children methods
     
@@ -43,24 +51,31 @@ module Ridela
       @name    = name
       @methods = []
     end
-    
-    def add(child)
-      @methods << child
-    end
   end
 
-  class NamespaceNode
-    include Annotatable
-    attr_reader :name, :interfaces
-    alias children interfaces
+  class MessageNode
+    include Annotatable, Parentable
+    attr_reader :name, :fields
+    alias  children fields
     
     def initialize(name)
+      @name   = name
+      @fields = []
+    end
+  end
+  
+  class FieldNode < DataNode; end
+  
+  class NamespaceNode
+    include Annotatable, Parentable
+    attr_reader :name, :children
+   
+    def initialize(name)
       @name = name
-      @interfaces = []
+      @children = []
     end
-    
-    def add(child)
-      @interfaces << child
-    end
+
+    def interfaces() @children.select{ |i| i.kind_of?(InterfaceNode) }; end
+    def messages() @children.select{ |i| i.kind_of?(MessageNode) }; end
   end
 end
