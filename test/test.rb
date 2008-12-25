@@ -1,6 +1,7 @@
 
 require 'test/unit'
 require 'ridela.rb'
+require 'ridela/vce.rb'
 
 class LanguageTest < Test::Unit::TestCase
   def test_build_with
@@ -32,7 +33,6 @@ class LanguageTest < Test::Unit::TestCase
     assert_equal(ns.interfaces[0].methods[0].args.size, 2)
     assert_equal(ns.interfaces[0].methods[0].args[0].name, :i)
     assert_equal(ns.interfaces[0].methods[0].args[0].kind.name, :int)
-    assert(!ns.interfaces[0].methods[0].args[0].kind.compound?)
     
     ns[:anon_key] = 'anon_val'
     assert_equal('anon_val', ns[:anon_key])
@@ -63,9 +63,34 @@ class LanguageTest < Test::Unit::TestCase
     assert_equal(hello.messages.first.fields.size, 2)
     assert_equal(hello.messages.first.fields.first.name, :foo)
     assert_equal(hello.messages.first.fields.first.kind.name, :string)
-    assert(!hello.messages.first.fields.first.kind.compound?)
   end
   
+  def test_list_kind
+    hello = Ridela::namespace(:hello) do
+      message(:Hello) do
+        field(:foo, list(:string))
+      end
+    end
+    
+    target = hello.messages.first.fields.first.kind
+    assert_equal("list[string]", target.name)
+    # VCE extension
+    assert_equal("std::vector< std::string >", target.cxx_name)
+  end
+
+  def test_assoc_kind
+    hello = Ridela::namespace(:hello) do
+      message(:Hello) do
+        field(:foo, assoc(:string, :int))
+      end
+    end
+    
+    target = hello.messages.first.fields.first.kind
+    assert_equal("assoc[string,int]", target.name)
+    # VCE extension
+    assert_equal("std::map< std::string, vce::VSint32 >", target.cxx_name)
+  end
+
 end
 
 class HelloTest < Test::Unit::TestCase

@@ -20,5 +20,6 @@ EOF
   message(:Bye) do
     field(:hello, message(:Hello))
     field(:ok, :bool)
+    field(:names, list(:string))
   end  
 end

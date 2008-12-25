@@ -210,6 +210,10 @@ module Ridela
       case self
       when PrimitiveKind
         (@@cxx_builtin_table[self.name] || (raise "Unknown Primitive!:#{self.kind.name}")).name
+      when ListKind
+        "std::vector< #{self.element_kind.cxx_name} >"
+      when AssocKind
+        "std::map< #{self.key_kind.cxx_name}, #{self.value_kind.cxx_name} >"
       else
         # XXX: encode compound name
         self.name

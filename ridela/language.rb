@@ -75,7 +75,15 @@ module Ridela
     def field(name, kind, annot={})
       define_with(FieldNode.new(name, kind), annot)
     end
-    
+
+    def list(elk)
+      ListKind.new(Ridela.kindify(elk))
+    end
+
+    def assoc(kk, vk)
+      AssocKind.new(Ridela.kindify(kk), Ridela.kindify(vk))
+    end
+
     def find(name)
       containing = @scope.reverse.find{|i| i.find(name) }
       containing ? containing.find(name) : nil

@@ -27,8 +27,46 @@ module Ridela
     def initialize(name)
       @name = name
     end
+  end
+
+  class ListKind
+    include Kind
+    attr_reader :element_kind
     
-    def compound?() false; end
+    def initialize(ek)
+      @element_kind = ek
+    end
+    
+    def name
+      "list[#{@element_kind.name}]"
+    end
+  end
+
+  class AssocKind
+    include Kind
+    attr_reader :key_kind, :value_kind
+    
+    def initialize(kk, vk)
+      @key_kind = kk
+      @value_kind = vk
+    end
+    
+    def name
+      "assoc[#{@key_kind.name},#{@value_kind.name}]"
+    end
+  end
+  
+  class ListKind
+    include Kind
+    attr_reader :element_kind
+    
+    def initialize(ek)
+      @element_kind = ek
+    end
+      
+    def name
+      "list[#{@element_kind.name}]"
+    end
   end
 
   class NodeKind
@@ -43,14 +81,16 @@ module Ridela
   end
   
   def self.kindify(kind)
-    if /Node$/ =~ kind.class.name
+    if kind.class.include?(Kind)
+      kind
+    elsif /Node$/ =~ kind.class.name
       NodeKind.new(kind)
     else
       case kind
       when Symbol
-        return PrimitiveKind.new(kind)
+        PrimitiveKind.new(kind)
       when PrimitiveKind
-        return PrimitiveKind.new(kind)
+        kind
       else
         raise "Unknown Kind:#{kind}" 
       end
