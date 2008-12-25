@@ -81,6 +81,7 @@ namespace vce_gen_serialize
 <% end %>
  
 <% namespace.messages.each do |m| %>
+  template<class Buffer>
   inline bool Push(const <%= m.name %>& message, Buffer& buffer)
   {
 <% m.fields.each do |f| %>
