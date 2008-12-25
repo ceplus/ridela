@@ -11,15 +11,17 @@ ns = Ridela::namespace(:hello) do
 #include <wsnetcore/Serialize.h>
 EOF
   end
-  
+
+  @text_length = 32
+    
   message(:Hello) do
     field(:foo, :int)
-    field(:bar, :string)
+    field(:bar, text(@text_length))
   end
   
   message(:Bye) do
     field(:hello, message(:Hello))
     field(:ok, :bool)
-    field(:names, list(:string))
+    field(:names, list(text(32), 64))
   end  
 end

@@ -27,7 +27,8 @@ RIDELA_VCE_XML_TEMPLATE = <<EOF
 <% interface.methods.each do |method| %>
     <method methname="<%= method.name %>" prflow="<%= method[:flow] %>">
 <% method.args.each do |arg| %>
-      <param prtype="<%= arg.kind.cxx_name %>" prname="<%= arg.name %>" <%= prlength(arg) %> />
+      <param prtype="<%= arg.kind.cxx_name %>" prname="<%= arg.name %>" 
+       prlength="<%= prlength(arg) %>" prvariable="<%= prvariable(arg) %>" />
 <%   end %>
     </method>
 <% end %>
@@ -176,9 +177,13 @@ module Ridela
       end
       
       def prlength(arg)
-        arg[:length] ? "prlength=\"#{arg[:length]}\"" : ""
+        arg[:length] ? arg[:length] : arg.kind.bytes
       end
 
+      def prvariable(arg)
+        (arg.kind.cxx_primitive?) ? "false" : "true"
+      end
+      
       def write(out)
         out.write(ERB.new(RIDELA_VCE_XML_TEMPLATE).result(binding).gsub(/\n+/, "\n"))
       end
@@ -228,6 +233,10 @@ module Ridela
     
     def cxx_initer
       @@cxx_builtin_table.include?(self.name) ? @@cxx_builtin_table[self.name].initer : nil
+    end
+
+    def cxx_primitive?
+      self.kind_of?(PrimitiveKind)
     end
     
     def self.cxx_builtin(key, name, initer)
