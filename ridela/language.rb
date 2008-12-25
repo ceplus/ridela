@@ -76,14 +76,18 @@ module Ridela
       define_with(FieldNode.new(name, kind), annot)
     end
 
-    def list(elk)
-      ListKind.new(Ridela.kindify(elk))
+    def text(bytes=TextKind::DEFAULT_BYTES)
+      TextKind.new(bytes)
+    end
+    
+    def list(elk, limit=ListKind::DEFAULT_LIMIT)
+      ListKind.new(Ridela.kindify(elk), limit)
     end
 
-    def assoc(kk, vk)
-      AssocKind.new(Ridela.kindify(kk), Ridela.kindify(vk))
+    def assoc(kk, vk, limit=ListKind::DEFAULT_LIMIT)
+      AssocKind.new(Ridela.kindify(kk), Ridela.kindify(vk), limit)
     end
-
+   
     def find(name)
       containing = @scope.reverse.find{|i| i.find(name) }
       containing ? containing.find(name) : nil

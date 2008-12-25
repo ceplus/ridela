@@ -131,7 +131,7 @@ module Ridela
       def compound?() false end
     end
     
-    class CxxKind < Struct.new(:name, :size, :initer); end
+    class CxxKind < Struct.new(:name, :initer); end
     
     class Validator
       def initialize
@@ -169,7 +169,7 @@ module Ridela
       attr_reader :namespace, :interface
       
       def initialize(namespace)
-        # VCE::IDLWriter only support namespace with single interface
+        # currently VCE::IDLWriter only supports namespace with single interface
         @namespace = namespace
         @interface = namespace.interfaces[0]
         Validator.new.set_default_annotation(namespace)
@@ -204,12 +204,18 @@ module Ridela
     
   end
 
+  #
+  # VCE specific Kind extension
+  #
+  
   module Kind
     @@cxx_builtin_table = {} # Symbol => CxxKind
     def cxx_name
       case self
       when PrimitiveKind
         (@@cxx_builtin_table[self.name] || (raise "Unknown Primitive!:#{self.kind.name}")).name
+      when TextKind
+        "std::string"
       when ListKind
         "std::vector< #{self.element_kind.cxx_name} >"
       when AssocKind
@@ -224,15 +230,14 @@ module Ridela
       @@cxx_builtin_table.include?(self.name) ? @@cxx_builtin_table[self.name].initer : nil
     end
     
-    def self.cxx_builtin(key, name, size, initer)
-      @@cxx_builtin_table[key] = VCE::CxxKind.new(name, size, initer)
+    def self.cxx_builtin(key, name, initer)
+      @@cxx_builtin_table[key] = VCE::CxxKind.new(name, initer)
     end
   end
   
-  Kind.cxx_builtin(:int,    'vce::VSint32', nil, '0')
-  Kind.cxx_builtin(:uint,   'vce::VUint32', nil, '0')
-  Kind.cxx_builtin(:bool,   'vce::VBOOL', 1, 'false')
-  Kind.cxx_builtin(:string, 'std::string', 32, nil)
+  Kind.cxx_builtin(:int,    'vce::VSint32', '0')
+  Kind.cxx_builtin(:uint,   'vce::VUint32', '0')
+  Kind.cxx_builtin(:bool,   'vce::VBOOL', 'false')
   
   #
   # extend interface to support TemplateNode

@@ -62,33 +62,60 @@ class LanguageTest < Test::Unit::TestCase
     assert_equal(hello.messages.first.name, :Hello)
     assert_equal(hello.messages.first.fields.size, 2)
     assert_equal(hello.messages.first.fields.first.name, :foo)
-    assert_equal(hello.messages.first.fields.first.kind.name, :string)
+    assert_equal(hello.messages.first.fields.first.kind.name, :text)
+  end
+  
+  def test_message_kind
+    hello = Ridela::namespace(:hello) do
+      message(:Hello) do
+        field(:foo, list(:string))
+      end
+    end
+
+    assert_kind_of(Ridela::MessageKind, Ridela::kindify(hello.messages.first))
   end
   
   def test_list_kind
     hello = Ridela::namespace(:hello) do
       message(:Hello) do
         field(:foo, list(:string))
+        field(:bar, list(text(16), 4))
       end
     end
     
-    target = hello.messages.first.fields.first.kind
-    assert_equal("list[string]", target.name)
+    target1 = hello.messages.first.fields.first.kind
+    assert_equal("list[text]", target1.name)
     # VCE extension
-    assert_equal("std::vector< std::string >", target.cxx_name)
+    assert_equal("std::vector< std::string >", target1.cxx_name)
+    
+    target2 = hello.messages.first.fields[1].kind
+    assert_equal(64, target2.bytes)
   end
 
   def test_assoc_kind
     hello = Ridela::namespace(:hello) do
       message(:Hello) do
-        field(:foo, assoc(:string, :int))
+        field(:foo, assoc(text(32), :int, 8))
       end
     end
     
     target = hello.messages.first.fields.first.kind
-    assert_equal("assoc[string,int]", target.name)
+    assert_equal("assoc[text,int]", target.name)
+    assert_equal((32+4)*8, target.bytes)
     # VCE extension
     assert_equal("std::map< std::string, vce::VSint32 >", target.cxx_name)
+  end
+
+  def test_text_kind
+    hello = Ridela::namespace(:hello) do
+      message(:Hello) do
+        field(:foo, text(16))
+      end
+    end
+    
+    target = hello.messages.first.fields.first.kind
+    assert_equal(:text, target.name)
+    assert_equal(16, target.bytes)
   end
 
 end

@@ -1,10 +1,12 @@
 
 
 TODO: 
+ * message: 最大バイト数の生成 (for gen)
+ * message: cxx name を  full-qualified に
+ * Driver: 個々の Writer にオプションを引き渡したい (interface の index など)
  * 名前空間のネスト
    * vce-message-cxx-h の出力対応
    * vce-idl の出力対応
- * message: 最大バイト数の生成 (for gen)
  * VCE:
    * オプション色々定義
    * request/response 対の支援

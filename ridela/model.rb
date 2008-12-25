@@ -22,54 +22,64 @@ module Ridela
   
   class PrimitiveKind
     include Kind
-    attr_reader :name
+    attr_reader :name, :bytes
     
-    def initialize(name)
-      @name = name
+    @@builtins = {}
+    
+    def initialize(name, bytes)
+      @name  = name
+      @bytes = bytes
     end
+
+    def self.find(name) @@builtins[name]; end
+    def self.define(name, bytes) @@builtins[name] = self.new(name, bytes); end
   end
 
-  class ListKind
+  PrimitiveKind.define(:int, 4)
+  PrimitiveKind.define(:uint, 4)
+  PrimitiveKind.define(:bool, 1)
+  
+  class TextKind # string
+    DEFAULT_BYTES = 32
+    
     include Kind
-    attr_reader :element_kind
-    
-    def initialize(ek)
-      @element_kind = ek
-    end
-    
-    def name
-      "list[#{@element_kind.name}]"
-    end
-  end
-
-  class AssocKind
-    include Kind
-    attr_reader :key_kind, :value_kind
-    
-    def initialize(kk, vk)
-      @key_kind = kk
-      @value_kind = vk
-    end
-    
-    def name
-      "assoc[#{@key_kind.name},#{@value_kind.name}]"
+    attr_reader :bytes
+    def name() :text; end
+    def initialize(b=DEFAULT_BYTES)
+      @bytes = b
     end
   end
   
   class ListKind
+    DEFAULT_LIMIT = 16
     include Kind
-    attr_reader :element_kind
+    attr_reader :element_kind, :limits
     
-    def initialize(ek)
+    def initialize(ek, li)
       @element_kind = ek
+      @limits = li
     end
-      
-    def name
-      "list[#{@element_kind.name}]"
-    end
+    
+    def name() "list[#{@element_kind.name}]"; end
+    def bytes() limits*(@element_kind.bytes); end
   end
 
-  class NodeKind
+  class AssocKind
+    DEFAULT_LIMIT = 16
+    include Kind
+    attr_reader :key_kind, :value_kind, :limits
+    
+    def initialize(kk, vk, li)
+      @key_kind = kk
+      @value_kind = vk
+      @limits = li
+    end
+    
+    def name() "assoc[#{@key_kind.name},#{@value_kind.name}]"; end
+    def bytes() limits*(@key_kind.bytes + @value_kind.bytes); end
+  end
+  
+  class MessageKind
     include Kind
     attr_reader :node
     
@@ -78,19 +88,20 @@ module Ridela
     end
     
     def name() node.name; end
+    def bytes() node.children.inject(0) { |a, c| a + c.kind.bytes }; end
   end
   
   def self.kindify(kind)
     if kind.class.include?(Kind)
       kind
-    elsif /Node$/ =~ kind.class.name
-      NodeKind.new(kind)
     else
       case kind
+      when MessageNode
+        MessageKind.new(kind)
+      when :string # for backward compatibility: use text()
+        TextKind.new
       when Symbol
-        PrimitiveKind.new(kind)
-      when PrimitiveKind
-        kind
+        PrimitiveKind.find(kind)
       else
         raise "Unknown Kind:#{kind}" 
       end
