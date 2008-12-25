@@ -1,0 +1,24 @@
+
+ns = Ridela::namespace(:hello) do
+  interface(:DemoProtocol) do
+    template('SQLDataMap', 'std::map<std::string>, ws::Variant>', 'ws::MaxSQLDataMapByte')
+    template('SQLDataList', 'std::vector<ws::SQLDataMap>', 'ws::MaxSQLDataListByte')
+    method(:Say, :flow=>:s2c) do
+      args([:message, :string, {:length => 256}], [:count, :int]) 
+    end
+    that[:cppheader] =<<EOF
+#include <wsnetcore/Define.h>
+#include <wsnetcore/Serialize.h>
+EOF
+  end
+  
+  message(:Hello) do
+    field(:foo, :int)
+    field(:bar, :string)
+  end
+  
+  message(:Bye) do
+    field(:hello, message(:Hello))
+    field(:ok, :bool)
+  end  
+end

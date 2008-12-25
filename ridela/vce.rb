@@ -184,6 +184,7 @@ module Ridela
     end
     
     class CxxMessageWriter
+      include WriterHelper
       attr_reader :namespace
       
       def initialize(namespace)
@@ -225,7 +226,7 @@ module Ridela
   
   Kind.cxx_builtin(:int,    'vce::VSint32', nil, '0')
   Kind.cxx_builtin(:uint,   'vce::VUint32', nil, '0')
-  Kind.cxx_builtin(:bool,   'bool', 4, 'false')
+  Kind.cxx_builtin(:bool,   'vce::VBOOL', 1, 'false')
   Kind.cxx_builtin(:string, 'std::string', 32, nil)
   
   #
