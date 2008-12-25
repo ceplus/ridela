@@ -21,13 +21,13 @@ RIDELA_VCE_TEMPLATE = <<EOF
     <includepath incpath="<%=h interface[:incpath] %>" />
 <% interface.templates.each do |template| %>
     <my:template my:tempname="<%= template.name %>"
-      my:type="<%=h template.type %>"
+      my:type="<%=h template.kind %>"
       my:size="<%=h template.size %>" />
 <% end %>
 <% interface.methods.each do |method| %>
     <method methname="<%= method.name %>" prflow="<%= method[:flow] %>">
-<%   method.args.each do |arg| %>
-      <param prtype="<%= t arg.type %>" prname="<%= arg.name %>" <%= prlength(arg) %> />
+<% method.args.each do |arg| %>
+      <param prtype="<%= k arg.kind.name %>" prname="<%= arg.name %>" <%= prlength(arg) %> />
 <%   end %>
     </method>
 <% end %>
@@ -44,13 +44,15 @@ module Ridela
   #
   class TemplateNode
     include Annotatable
-    attr_reader :name, :type, :size
+    attr_reader :name, :kind, :size
     
-    def initialize(name, type, size)
+    def initialize(name, kind, size)
       @name = name
-      @type = type
+      @kind = kind
       @size = size
     end
+    
+    def compound?() false end
   end
   
   #
@@ -62,12 +64,10 @@ module Ridela
       @templates ||= []
       @templates
     end
-    
-    def children() []; end
   end
 
   class Language
-    def template(name, type, size) that.templates << TemplateNode.new(name, type, size) end
+    def template(name, kind, size) that.templates << TemplateNode.new(name, kind, size) end
   end
   
   module VCE
@@ -102,7 +102,7 @@ module Ridela
     class Writer
       attr_reader :namespace, :interface
 
-      TYPE_MAP = { 
+      KIND_MAP = { 
         :long => :dword
       }
       
@@ -119,13 +119,13 @@ module Ridela
       
       def h(str) CGI.escapeHTML(str); end
 
-      def map_type(src) TYPE_MAP[src] || src; end
+      def map_kind(src) KIND_MAP[src] || src; end
       
       def write(out)
         out.write(ERB.new(RIDELA_VCE_TEMPLATE).result(binding).gsub(/\n+/, "\n"))
       end
       
-      alias t map_type
+      alias k map_kind
     end
   end
 end

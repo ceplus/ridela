@@ -31,7 +31,8 @@ class LanguageTest < Test::Unit::TestCase
     assert_equal(ns.interfaces[0].methods[0].name, :foo)
     assert_equal(ns.interfaces[0].methods[0].args.size, 2)
     assert_equal(ns.interfaces[0].methods[0].args[0].name, :i)
-    assert_equal(ns.interfaces[0].methods[0].args[0].kind, :int)
+    assert_equal(ns.interfaces[0].methods[0].args[0].kind.name, :int)
+    assert(!ns.interfaces[0].methods[0].args[0].kind.compound?)
     
     ns[:anon_key] = 'anon_val'
     assert_equal('anon_val', ns[:anon_key])
@@ -61,6 +62,8 @@ class LanguageTest < Test::Unit::TestCase
     assert_equal(hello.messages.first.name, :Hello)
     assert_equal(hello.messages.first.fields.size, 2)
     assert_equal(hello.messages.first.fields.first.name, :foo)
+    assert_equal(hello.messages.first.fields.first.kind.name, :string)
+    assert(!hello.messages.first.fields.first.kind.compound?)
   end
   
 end

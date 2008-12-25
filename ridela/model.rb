@@ -11,6 +11,27 @@ module Ridela
       children << child
     end
   end
+
+  class PrimitiveKind
+    attr_reader :name
+    
+    def initialize(name)
+      @name = name
+    end
+    
+    def compound?() false; end
+  end
+  
+  def self.kindify(kind)
+    case kind
+    when Symbol
+      return PrimitiveKind.new(kind)
+    when PrimitiveKind
+      return kind
+    else
+      raise "Unknown Kind:#{kind}" 
+    end
+  end
   
   class DataNode
     include Annotatable
@@ -18,7 +39,7 @@ module Ridela
     
     def initialize(name, kind)
       @name = name
-      @kind = kind
+      @kind = Ridela.kindify(kind)
     end
     
     def children() []; end
